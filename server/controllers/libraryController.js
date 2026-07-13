@@ -1,10 +1,10 @@
 const MediaLibrary = require('../models/MediaLibrary');
+
 const saveMediaDossier = async (req, res, next) => {
   try {
     const { mediaType, title, imageUrl, releaseYear, dossierText } = req.body;
     const userId = req.user.id;
 
-    // Validate required fields
     if (!mediaType || !title || !dossierText) {
       return res.status(400).json({
         success: false,
@@ -12,7 +12,6 @@ const saveMediaDossier = async (req, res, next) => {
       });
     }
 
-    // Check if already saved (case-insensitive)
     const existing = await MediaLibrary.findOne({
       user: userId,
       title: { $regex: new RegExp(`^${title}$`, 'i') },
@@ -28,7 +27,6 @@ const saveMediaDossier = async (req, res, next) => {
       });
     }
 
-    // Create new library entry
     const saved = await MediaLibrary.create({
       user: userId,
       mediaType,
@@ -45,7 +43,6 @@ const saveMediaDossier = async (req, res, next) => {
       dossier: saved,
     });
   } catch (error) {
-    // Handle duplicate key error (just in case)
     if (error.code === 11000) {
       return res.status(200).json({
         success: true,
@@ -57,11 +54,10 @@ const saveMediaDossier = async (req, res, next) => {
   }
 };
 
-
 const getMyMediaLibrary = async (req, res, next) => {
   try {
     const library = await MediaLibrary.find({ user: req.user.id })
-      .sort({ savedAt: -1 }); // Newest first
+      .sort({ savedAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -72,7 +68,6 @@ const getMyMediaLibrary = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const getMediaDossierById = async (req, res, next) => {
   try {
@@ -86,7 +81,6 @@ const getMediaDossierById = async (req, res, next) => {
       });
     }
 
-    // Ensure the dossier belongs to the logged-in user
     if (dossier.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -94,7 +88,6 @@ const getMediaDossierById = async (req, res, next) => {
       });
     }
 
-    // Update lastViewed timestamp
     dossier.lastViewed = new Date();
     await dossier.save();
 
@@ -106,7 +99,6 @@ const getMediaDossierById = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const checkIfSaved = async (req, res, next) => {
   try {
@@ -134,7 +126,6 @@ const checkIfSaved = async (req, res, next) => {
   }
 };
 
-
 const deleteMediaDossier = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -147,7 +138,6 @@ const deleteMediaDossier = async (req, res, next) => {
       });
     }
 
-    // Ensure the dossier belongs to the logged-in user
     if (dossier.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -167,6 +157,7 @@ const deleteMediaDossier = async (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = {
   saveMediaDossier,
   getMyMediaLibrary,

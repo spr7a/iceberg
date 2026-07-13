@@ -76,7 +76,6 @@ const Media = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
-      {/* Hero section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight text-text-primary mb-3">
           Ice Berg
@@ -86,19 +85,16 @@ const Media = () => {
         </p>
       </div>
 
-      {/* Search bar */}
       <div className="mb-8">
         <MediaSearchBar onSearch={handleSearch} loading={loading} />
       </div>
 
-      {/* Error */}
       {error && (
         <div className="mb-6 p-4 border border-error/40 bg-error/10 text-error rounded-sm text-sm">
           {error}
         </div>
       )}
 
-      {/* Loading spinner */}
       {loading && (
         <div className="flex justify-center py-12">
           <div className="text-center">
@@ -108,10 +104,8 @@ const Media = () => {
         </div>
       )}
 
-      {/* Results - render markdown with custom styling */}
       {result && !loading && (
         <div className="space-y-8">
-          {/* Image Gallery - show at top if images exist */}
           {images.length > 0 && (
             <div className="bg-surface border border-border rounded-lg p-6">
               <h3 className="text-sm font-semibold text-text-secondary mb-4 uppercase tracking-wider">
@@ -133,7 +127,6 @@ const Media = () => {
             </div>
           )}
 
-          {/* Dossier Content */}
           <div className="bg-surface border border-border rounded-lg p-8">
             <div className="flex justify-between items-start mb-6">
               <h2 className="text-2xl font-serif font-bold text-text-primary">
@@ -190,7 +183,6 @@ const Media = () => {
         </div>
       )}
 
-      {/* Trending section - only show when no result */}
       {!result && !loading && (
         <div className="mt-16">
           <div className="flex items-center gap-3 mb-6">
@@ -224,7 +216,6 @@ const Media = () => {
                     onClick={() => handleSearch(type, item.topic)}
                     className="group text-left bg-bg-secondary border border-bg-tertiary rounded-sm overflow-hidden transition-all duration-150 hover:border-accent/60 hover:shadow-md active:scale-[0.98] cursor-pointer"
                   >
-                    {/* Image thumbnail */}
                     {imageUrl ? (
                       <div className="h-32 overflow-hidden">
                         <img

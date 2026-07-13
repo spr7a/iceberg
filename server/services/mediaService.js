@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-// TMDB API for Movies/Shows
 const fetchMovieData = async (query) => {
   try {
     const apiKey = process.env.TMDB_API_KEY;
@@ -8,7 +7,6 @@ const fetchMovieData = async (query) => {
       throw new Error('TMDB_API_KEY is not defined in environment variables');
     }
 
-    // Search for the movie/show
     const searchResponse = await axios.get('https://api.themoviedb.org/3/search/multi', {
       params: {
         api_key: apiKey,
@@ -26,7 +24,6 @@ const fetchMovieData = async (query) => {
     const mediaType = item.media_type;
     const mediaId = item.id;
 
-    // Fetch detailed data
     const detailResponse = await axios.get(`https://api.themoviedb.org/3/${mediaType}/${mediaId}`, {
       params: {
         api_key: apiKey,
@@ -54,7 +51,6 @@ const fetchMovieData = async (query) => {
   }
 };
 
-// iTunes API for Music
 const fetchMusicData = async (query) => {
   try {
     const response = await axios.get('https://itunes.apple.com/search', {
@@ -88,7 +84,6 @@ const fetchMusicData = async (query) => {
   }
 };
 
-// RAWG API for Games
 const fetchGameData = async (query) => {
   try {
     const apiKey = process.env.RAWG_API_KEY;
@@ -127,7 +122,6 @@ const fetchGameData = async (query) => {
   }
 };
 
-// OpenLibrary API for Books
 const fetchBookData = async (query) => {
   try {
     const response = await axios.get('https://openlibrary.org/search.json', {
@@ -149,7 +143,7 @@ const fetchBookData = async (query) => {
       creator: item.author_name ? item.author_name.join(', ') : 'Unknown',
       date: item.first_publish_year ? String(item.first_publish_year) : null,
       genre: item.subject ? item.subject.slice(0, 3).join(', ') : 'Unknown',
-      rating: 'N/A', // OpenLibrary doesn't provide ratings
+      rating: 'N/A',
       type: 'Book',
       cover: item.cover_i ? `https://covers.openlibrary.org/b/id/${item.cover_i}-L.jpg` : null,
       isbn: item.isbn ? item.isbn[0] : null,
@@ -160,7 +154,6 @@ const fetchBookData = async (query) => {
   }
 };
 
-// Fetch single primary image for media
 const fetchPrimaryImage = async (type, query) => {
   try {
     let data;
@@ -192,7 +185,6 @@ const fetchPrimaryImage = async (type, query) => {
   }
 };
 
-// Main function to fetch core identity based on media type
 const fetchCoreIdentity = async (type, query) => {
   switch (type.toLowerCase()) {
     case 'movie':

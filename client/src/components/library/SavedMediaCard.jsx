@@ -56,7 +56,6 @@ const SavedMediaCard = ({ item, onDelete, emoji }) => {
       </div>
       {expanded && (
         <div className="px-5 pb-4 border-t border-bg-tertiary">
-          {/* Image */}
           {item.imageUrl && !imageError && (
             <div className="mt-3">
               <img
@@ -68,7 +67,6 @@ const SavedMediaCard = ({ item, onDelete, emoji }) => {
             </div>
           )}
           
-          {/* Dossier Text */}
           {item.dossierText && (
             <div className="mt-3 text-sm text-text-secondary leading-relaxed">
               <p>{item.dossierText}</p>

@@ -17,11 +17,9 @@ let client = null;
 
 const getClient = async () => {
   if (client && client.isOpen) {
-    console.log('[Redis] Reusing existing connection');
     return client;
   }
 
-  console.log('[Redis] Creating new connection...');
   client = redis.createClient({ url: REDIS_URL });
 
   client.on('error', (err) => console.error('[Redis] Error:', err.message));
@@ -30,34 +28,27 @@ const getClient = async () => {
   client.on('end', () => console.log('[Redis] Connection ended'));
 
   await client.connect();
-  console.log('[Redis] Connection established');
   return client;
 };
 
 const trackQuery = async (queryTopic, summaryJson) => {
   const topicKey = queryTopic.toLowerCase().trim();
-  console.log('[Redis] trackQuery: tracking "' + topicKey + '"');
 
   try {
     const redisClient = await getClient();
-
     await redisClient.zIncrBy('trending_queries', 1, topicKey);
-    console.log('[Redis] trackQuery: ZINCRBY +1 for "' + topicKey + '"');
 
     await redisClient.setEx(
       `brief:${topicKey}`,
       604800,
       JSON.stringify(summaryJson)
     );
-    console.log('[Redis] trackQuery: SETEX brief:' + topicKey + ' (7d TTL)');
   } catch (err) {
     console.error('[Redis] trackQuery error:', err.message);
   }
 };
 
 const getTrending = async (count = 10) => {
-  console.log('[Redis] getTrending: fetching top ' + count + ' items');
-
   try {
     const redisClient = await getClient();
 
@@ -65,8 +56,6 @@ const getTrending = async (count = 10) => {
       REV: true,
       WITHSCORES: true,
     });
-
-    console.log('[Redis] getTrending: got ' + (results ? results.length : 0) + ' items');
 
     if (!results || results.length === 0) return [];
 
@@ -96,8 +85,6 @@ const getTrending = async (count = 10) => {
 };
 
 const resetMonthlyTrending = async () => {
-  console.log('[Redis] resetMonthlyTrending: starting cleanup');
-
   try {
     const redisClient = await getClient();
 
@@ -105,10 +92,7 @@ const resetMonthlyTrending = async () => {
       WITHSCORES: true,
     });
 
-    if (!all || all.length === 0) {
-      console.log('[Redis] resetMonthlyTrending: no data');
-      return;
-    }
+    if (!all || all.length === 0) return;
 
     const pipeline = redisClient.multi();
     pipeline.del('trending_queries');
@@ -117,8 +101,6 @@ const resetMonthlyTrending = async () => {
       pipeline.del(`brief:${topic}`);
     }
     await pipeline.exec();
-
-    console.log('[Redis] resetMonthlyTrending: cleared ' + all.length + ' items');
   } catch (err) {
     console.error('[Redis] resetMonthlyTrending error:', err.message);
   }
@@ -128,7 +110,6 @@ const close = async () => {
   if (client && client.isOpen) {
     await client.quit();
     client = null;
-    console.log('[Redis] Connection closed');
   }
 };
 

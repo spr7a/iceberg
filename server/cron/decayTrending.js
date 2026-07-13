@@ -10,8 +10,6 @@ const startMonthlyResetJob = () => {
       console.error('[Cron] resetMonthlyTrending error:', err.message);
     }
   });
-
-  console.log('[Cron] Monthly trending reset job scheduled (1st of every month at midnight)');
 };
 
 module.exports = { startMonthlyResetJob };

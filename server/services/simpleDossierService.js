@@ -3,7 +3,6 @@ const { extractText } = require('./groqService');
 const { trackQuery, getTrending } = require('./redisService');
 const { fetchPrimaryImage } = require('./mediaService');
 
-// ---------- THE ULTIMATE ANTI-FLUFF PROMPT (Your Design) ----------
 const DEEP_LORE_PROMPT = (title, mediaType, searchText) => `
 **Role & Objective:**
 Act as a master media historian, archivist, and deep-lore expert. Your task is to provide an exhaustive, highly niche dive into the history, lore, and obscure facts surrounding **"${title}"**, which is a **${mediaType}**.
@@ -46,7 +45,6 @@ Please organize your response using the following detailed categories. **If you 
 - If a fact is unconfirmed, clearly state it as a rumor. Otherwise, stick exclusively to verified reality.
 `;
 
-// ---------- MUSIC-SPECIFIC DEEP-LORE PROMPT ----------
 const MUSIC_LORE_PROMPT = (title, searchText) => `
 You are a "Music Lore Hunter" who specializes in unearthing the weirdest, most obscure facts from the depths of Reddit, Gearspace, Discogs forums, and fan wikis.
 
@@ -127,7 +125,6 @@ ${searchText.slice(0, 7000)}
 **REMEMBER:** Every single bullet point MUST contain a specific name, date, number, location, or exact quote. Zero exceptions.
 `;
 
-// ---------- THE ORCHESTRATOR ----------
 const normalizeType = (type) => {
   const typeMap = {
     'tv': 'tv',
@@ -145,18 +142,16 @@ const normalizeType = (type) => {
 };
 
 const generateSimpleDossier = async (type, query) => {
-  console.log(`🔍 Hunting deep-cuts for: ${query} (${type})`);
+  console.log(`Hunting deep-cuts for: ${query} (${type})`);
 
-  // Normalize the type
   const normalizedType = normalizeType(type);
   if (!normalizedType) {
     return { 
-      dossier: `❌ Media type "${type}" not supported. Use movie, music, book, tv, or game.`,
+      dossier: `Media type "${type}" not supported. Use movie, music, book, tv, or game.`,
       images: []
     };
   }
 
-  // Map frontend types to readable media strings for the prompt
   const typeMap = {
     movie: 'Movie',
     music: 'Music Artist / Album',
@@ -166,32 +161,26 @@ const generateSimpleDossier = async (type, query) => {
   };
   const mediaType = typeMap[normalizedType] || normalizedType;
 
-  // ---- STEP 1: Build a search query that targets DEEP LORE ----
-  // Explicitly hunt for the places where niche facts live
   const isMusic = normalizedType === 'music';
   const loreQuery = isMusic
     ? `"${query}" (site:reddit.com OR site:gearspace.com OR site:discogs.com OR site:soundonsound.com OR site:musicradar.com OR "interview" OR "behind the scenes" OR "trivia" OR "lore" OR "lost media" OR "recording" OR "production" OR "gear" OR "synth" OR "sample")`
     : `"${query}" ${normalizedType} (site:reddit.com OR site:gearspace.com OR site:discogs.com OR site:imdb.com OR "interview" OR "behind the scenes" OR "trivia" OR "lore" OR "deleted scene" OR "lost media")`;
 
-  // ---- STEP 2: Call SERPAPI ONCE ----
   const { rawText, images } = await searchMediaFacts(loreQuery);
 
   if (!rawText || rawText.length < 100) {
     return { 
-      dossier: `❌ Couldn't find enough deep-cut data for **"${query}"**. Try searching for a specific album, specific episode, or adding a year (e.g., "Aphex Twin 1995").`,
+      dossier: `Couldn't find enough deep-cut data for **"${query}"**. Try searching for a specific album, specific episode, or adding a year (e.g., "Aphex Twin 1995").`,
       images: []
     };
   }
 
-  // ---- STEP 2.5: Fetch primary image from specialized API ----
   const primaryImage = await fetchPrimaryImage(normalizedType, query);
 
-  // ---- STEP 3: Inject the search text into the appropriate prompt ----
   const userPrompt = isMusic
     ? MUSIC_LORE_PROMPT(query, rawText)
     : DEEP_LORE_PROMPT(query, mediaType, rawText);
 
-  // ---- STEP 4: Call Groq with the "Lore Gatekeeper" instruction ----
   const systemInstruction = isMusic
     ? `
 You are a "Music Lore Gatekeeper" with zero tolerance for generic fluff.
@@ -215,41 +204,35 @@ You are a "Lore Gatekeeper" with zero tolerance for generic fluff.
 
   const finalDossier = await extractText(systemInstruction, userPrompt);
 
-  // Post-process: if the AI somehow outputs generic fluff despite the prompt, catch it.
   if (finalDossier.length < 50 || finalDossier.includes("sparked significant online discussion")) {
     return { 
-      dossier: `⚠️ The search results for **"${query}"** only contained surface-level summaries. Try searching for a specific work (e.g., "Selected Ambient Works" instead of "Aphex Twin") to unlock the deep lore.`,
+      dossier: `The search results for **"${query}"** only contained surface-level summaries. Try searching for a specific work (e.g., "Selected Ambient Works" instead of "Aphex Twin") to unlock the deep lore.`,
       images: images,
       primaryImage: primaryImage
     };
   }
 
-  // ---- STEP 5: Track query for trending ----
   try {
     await trackQuery(query, { title: query, type: normalizedType, preview: finalDossier.substring(0, 200), image: primaryImage });
   } catch (err) {
     console.error('[Redis] Failed to track query:', err.message);
   }
 
-  // Combine primary image with SERP images (primary image first)
   const allImages = primaryImage ? [primaryImage, ...images] : images;
 
   return { dossier: finalDossier, images: allImages };
 };
 
-// Hardcoded featured entries that always appear at the top of trending
 const HARDCODED_TRENDING = [
   { topic: 'aphex twin', score: 999, summary: { type: 'music', title: 'Aphex Twin' } },
   { topic: 'boards of canada', score: 998, summary: { type: 'music', title: 'Boards of Canada' } },
 ];
 
-// Get trending queries — prepends hardcoded entries to Redis data
 const getTrendingQueries = async () => {
   try {
     const redisTrending = await getTrending(10);
     const redisTopics = new Set(redisTrending.map((t) => t.topic.toLowerCase().trim()));
 
-    // Only inject hardcoded entries not already in Redis
     const missingHardcoded = HARDCODED_TRENDING.filter(
       (h) => !redisTopics.has(h.topic.toLowerCase().trim())
     );
@@ -258,7 +241,6 @@ const getTrendingQueries = async () => {
     return combined;
   } catch (err) {
     console.error('[Redis] Failed to get trending:', err.message);
-    // Even if Redis fails, return the hardcoded entries
     return HARDCODED_TRENDING;
   }
 };

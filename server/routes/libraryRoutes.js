@@ -14,7 +14,6 @@ router.route('/media')
   .post(saveMediaDossier)
   .get(getMyMediaLibrary);
 
-// GET    /api/library/media/check/:title  - Check if a specific title is already saved
 router.get('/media/check/:title', checkIfSaved);
 router.route('/media/:id')
   .get(getMediaDossierById)

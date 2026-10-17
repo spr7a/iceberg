@@ -9,7 +9,7 @@ const extractText = async (systemPrompt, userContent) => {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      model: 'llama-3.1-70b-versatile',
+      model: 'openai/gpt-oss-20b',
       temperature: 0.1,
       max_tokens: 1024,
     });

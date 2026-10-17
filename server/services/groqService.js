@@ -9,9 +9,13 @@ const extractText = async (systemPrompt, userContent) => {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      model: 'mixtral-8x7b-32768',
-      temperature: 0.1,
-      max_tokens: 1024,
+      model: 'openai/gpt-oss-20b',
+      temperature: 1,
+      max_completion_tokens: 2048,
+      top_p: 1,
+      stream: false, 
+      reasoning_effort: 'medium',
+      stop: null
     });
 
     return completion.choices[0]?.message?.content || '';

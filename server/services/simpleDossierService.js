@@ -168,7 +168,7 @@ const generateSimpleDossier = async (type, query) => {
 
   const { rawText, images } = await searchMediaFacts(loreQuery);
 
-  if (!rawText || rawText.length < 100) {
+  if (!rawText || rawText.length < 10) {
     return { 
       dossier: `Couldn't find enough deep-cut data for **"${query}"**. Try searching for a specific album, specific episode, or adding a year (e.g., "Aphex Twin 1995").`,
       images: []
@@ -204,7 +204,7 @@ You are a "Lore Gatekeeper" with zero tolerance for generic fluff.
 
   const finalDossier = await extractText(systemInstruction, userPrompt);
 
-  if (finalDossier.length < 50 || finalDossier.includes("sparked significant online discussion")) {
+  if (finalDossier.length < 10|| finalDossier.includes("sparked significant online discussion")) {
     return { 
       dossier: `The search results for **"${query}"** only contained surface-level summaries. Try searching for a specific work (e.g., "Selected Ambient Works" instead of "Aphex Twin") to unlock the deep lore.`,
       images: images,

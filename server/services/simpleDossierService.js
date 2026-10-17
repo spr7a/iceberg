@@ -119,8 +119,8 @@ ${searchText.slice(0, 7000)}
 - Start DIRECTLY with the first section. NO introduction, NO summary, NO "here are the facts".
 - Bold specific names, dates, numbers, and gear models.
 - Use bullet points for each concrete fact.
-- If you can't find at least 3 concrete facts in a section, SKIP IT entirely.
-- If you have fewer than 5 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
+- If you can't find at least 1 concrete facts in a section, SKIP IT entirely.
+- If you have fewer than 1 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
 
 **REMEMBER:** Every single bullet point MUST contain a specific name, date, number, location, or exact quote. Zero exceptions.
 `;
@@ -190,7 +190,7 @@ You are a "Music Lore Gatekeeper" with zero tolerance for generic fluff.
 2. If the provided search text does NOT contain a specific name, date, location, or technical detail for a category, **SKIP THAT CATEGORY**. Do not write "No information found".
 3. Absolutely DO NOT start with an introductory sentence. Jump straight into the first section.
 4. Every bullet point MUST contain a concrete fact (e.g., "Used a modified EMS Synthi AKS" vs. "Used interesting gear").
-5. If you have fewer than 5 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
+5. If you have fewer than 1 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
 `
     : `
 You are a "Lore Gatekeeper" with zero tolerance for generic fluff.

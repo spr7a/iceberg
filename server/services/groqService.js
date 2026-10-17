@@ -9,7 +9,7 @@ const extractText = async (systemPrompt, userContent) => {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama3-70b-8192',
       temperature: 0.1,
       max_tokens: 1024,
     });

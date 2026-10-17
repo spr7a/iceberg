@@ -5,124 +5,76 @@ const { fetchPrimaryImage } = require('./mediaService');
 
 const DEEP_LORE_PROMPT = (title, mediaType, searchText) => `
 **Role & Objective:**
-Act as a master media historian, archivist, and deep-lore expert. Your task is to provide an exhaustive, highly niche dive into the history, lore, and obscure facts surrounding **"${title}"**, which is a **${mediaType}**.
+Act as a master media historian and archivist. Your task is to provide a dive into the history, lore, and facts surrounding **"${title}"**, which is a **${mediaType}**.
 
-**Strict Constraints (CRITICAL):**
-- **No Basic Trivia:** Skip widely known facts. I want "bottom-of-the-iceberg" facts only.
-- **No Vague Summaries or Meta-Commentary:** Do NOT write filler sentences like *"This movie sparked significant online discussion with its themes"* or *"There are many shocking behind-the-scenes secrets."* 
-- **Hard Data Only:** I do not want to be told *that* there are facts; I want the actual facts. Give me specific names, exact dates, technical mechanics, direct quotes, and concrete details. Skip the introduction and get straight to the data.
+**Constraints:**
+- **Balance Niche with Context:** Prioritize "bottom-of-the-iceberg" facts, Reddit deep-dives, and obscure forum data. However, if you find obvious or widely known general information, keep a few of them to provide good context.
+- **Data-Driven:** Give specific names, dates, direct quotes, and concrete details whenever possible.
 
 **Here is the raw search data to mine:**
 ${searchText.slice(0, 6500)}
 
-Please organize your response using the following detailed categories. **If you have absolutely ZERO concrete data for a category, skip it entirely. Do not write "No information found".**
+Please organize your response using the following detailed categories. If a category lacks data, do your best to summarize general trivia related to it, or combine it with another section.
 
 ---
 
-**1. Deep Lore, Worldbuilding & Concept Themes**
-- Extract specific canon lore (or underlying lyrical concepts) hidden deep within tie-in materials (name the specific liner notes, comic books, companion novels, or obscure interviews).
-- Explain the exact backstory of a specific minor character, background event, or specific setting/song detail.
-- Identify specific paradoxes, timeline anomalies, or narrative inconsistencies.
+**1. Lore, Worldbuilding & Concept Themes**
+- Extract specific canon lore or underlying concepts. 
+- Explain backstory details for characters, settings, or narrative events.
 
-**2. Niche Easter Eggs & Hidden Details**
-- List the exact timestamps or locations of blink-and-you-miss-it visual details, hidden audio cues, backmasking (reversed audio), or coded messages.
-- Explain the specific inside jokes made by the developers, directors, or band members.
+**2. Easter Eggs & Hidden Details**
+- List visual details, hidden audio cues, or coded messages.
+- Explain inside jokes made by the creators.
 
-**3. Cut Content, Unused Concepts & Lost Media**
-- Name the specific deleted scenes, cut levels, unreleased tracks, obscure B-sides, or abandoned storylines.
-- Explain exactly why this content was cut, and note if it has been leaked, bootlegged, or officially released since.
+**3. Cut Content & Development History**
+- Name deleted scenes, unreleased content, or abandoned concepts.
+- Explain why this content was cut if known.
 
-**4. Bizarre Real-World Impact & Legal Oddities**
-- Detail any specific strange real-world events, controversies, or unexpected cultural shifts this media directly caused.
-- Name the parties involved in bizarre lawsuits, sample clearance disputes, copyright battles, or regional censorship issues.
+**4. Real-World Impact & Trivia**
+- Detail interesting real-world events, controversies, or cultural shifts.
+- Include general popular trivia if deep cuts aren't available.
 
 ---
 
 **Formatting Rules:**
-- **Zero fluff intros or outros.** Start immediately with the first category.
+- **Zero fluff intros.** Start immediately with the first category.
 - Use bolding for names, dates, and specific terms.
-- Present the facts as concise, punchy, data-heavy bullet points under each heading.
-- If a fact is unconfirmed, clearly state it as a rumor. Otherwise, stick exclusively to verified reality.
+- Present the facts as concise bullet points.
 `;
 
 const MUSIC_LORE_PROMPT = (title, searchText) => `
-You are a "Music Lore Hunter" who specializes in unearthing the weirdest, most obscure facts from the depths of Reddit, Gearspace, Discogs forums, and fan wikis.
+You are a "Music Lore Hunter". Unearth the weirdest, most obscure facts from the depths of Reddit, Gearspace, Discogs, and fan wikis for "${title}". 
 
-Using ONLY the search results below, compile a dossier of the most fascinating hidden details, easter eggs, and deep-cut facts for the artist/song/album "${title}".
-
-**PRIMARY SOURCES TO PRIORITIZE (in order):**
-1. Reddit threads (r/electronicmusic, r/synthesizers, r/LetsTalkMusic, r/audioengineering, r/fanpages, r/indieheads, r/hiphopheads, r/music)
-2. Gearspace and other production forums
-3. Discogs comments and release notes
-4. Fan wikis (e.g., "The Pink Floyd Wiki", "The Beatles Wiki")
-5. Obscure interviews (NME, Pitchfork, Rolling Stone, Fader)
-6. YouTube comments on deep-cut remixes or demos
-
-**HARD DATA REQUIREMENTS (NO FLUFF):**
-
-🚫 **FORBIDDEN (ZERO TOLERANCE):**
-- "X is widely considered to be..."
-- "Many fans believe..."
-- "X has inspired a generation of..."
-- "His influence can be heard in..."
-- "X is known for his experimental approach..."
-- "Discussions on Reddit often feature..."
-- "There are many interesting facts about..."
-
-✅ **REQUIRED (CONCRETE FACTS ONLY):**
-- Specific gear used (exact model numbers, modifications, DIY builds)
-- Exact dates, locations, and studio names
-- Direct quotes from band members, producers, engineers
-- Specific numbers (copies sold, BPM, recording time, budget)
-- Specific Reddit thread titles and exact user claims
-- Specific alternative versions, demos, or B-sides with exact track names
-- Specific legal battles, sample clearance issues, or controversies
-- Specific visual details in music videos, album art, or live performances
-- Specific technical details (recording techniques, mixing quirks, mastering oddities)
+**SOURCES TO PRIORITIZE:**
+1. Reddit threads and Gearspace/production forums
+2. Discogs comments and fan wikis
+3. Obscure interviews or popular mainstream trivia (use general info if deep cuts are missing)
 
 **SEARCH RESULTS:**
 ${searchText.slice(0, 7000)}
 
-**OUTPUT STRUCTURE (Skip any section with insufficient concrete data):**
+**OUTPUT STRUCTURE:**
 
-## 🎛️ PRODUCTION GEEKERY
-*(Only include: specific gear models, exact studio names, recording dates, technical innovations, DIY techniques)*
+## 🎛️ PRODUCTION & CREATION
+*(Include gear models, studio names, recording dates, or general album creation trivia)*
 
-> Example: "Used a modified EMS Synthi AKS with a banana jack mod (specificed in r/synthesizers thread by user 'synthesist_99')."
+## 📜 STORIES & LORE
+*(Include specific incidents, quotes, real-world inspirations, or popular band history)*
 
-## 📜 THE UNTOLD STORIES
-*(Only include: specific incidents, exact quotes, real-world inspirations, behind-the-scenes drama)*
+## 🧵 FAN THEORIES & RABBIT HOLES
+*(Include Reddit thread arguments, fan debates, or widely accepted community theories)*
 
-> Example: "In a 1997 NME interview, James stated: 'I recorded the entire album on a £5 portable cassette recorder from Argos.'"
+## 🕵️ EASTER EGGS & HIDDEN DETAILS
+*(Include timestamps, hidden messages, sample origins, or visual clues)*
 
-## 🧵 REDDIT RABBIT HOLES & FORUM WARS
-*(Only include: specific Reddit thread titles, exact user arguments, controversies, unresolved debates)*
-
-> Example: "r/synthesizers thread 'Is the Casio FZ-1 underrated?' has 247 comments arguing about its use on the RDJ Album."
-
-## 🕵️ HIDDEN EASTER EGGS
-*(Only include: specific timestamps, hidden messages, visual clues, backmasking, coded references)*
-
-> Example: "Track 3 contains backmasked vocals at 2:34 saying 'I love you' when reversed."
-
-## 🗑️ CUT CONTENT & LOST MEDIA
-*(Only include: unreleased tracks with exact names, scrapped album concepts, demo versions, rare bootlegs)*
-
-> Example: "The unreleased track 'Unreleased 1994' was leaked on Reddit in 2019 and is available on YouTube."
-
-## ⚖️ LEGAL BATTLES & CONTROVERSIES
-*(Only include: specific lawsuits, sample clearance disputes, censorship cases, regional bans)*
-
-> Example: "In 1998, James was sued by his neighbor for playing a 5Hz frequency that allegedly caused migraines. Case was dismissed."
+## 🗑️ RARE & CUT CONTENT
+*(Include unreleased tracks, demos, rare bootlegs, or alternative versions)*
 
 **FORMATTING RULES:**
-- Start DIRECTLY with the first section. NO introduction, NO summary, NO "here are the facts".
+- Start DIRECTLY with the first section. NO introduction.
 - Bold specific names, dates, numbers, and gear models.
-- Use bullet points for each concrete fact.
-- If you can't find at least 1 concrete facts in a section, SKIP IT entirely.
-- If you have fewer than 1 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
-
-**REMEMBER:** Every single bullet point MUST contain a specific name, date, number, location, or exact quote. Zero exceptions.
+- Use bullet points for each fact.
+- It is OKAY to include popular/obvious facts if ultra-niche facts are missing. Just ensure the output is interesting.
 `;
 
 const normalizeType = (type) => {
@@ -162,15 +114,18 @@ const generateSimpleDossier = async (type, query) => {
   const mediaType = typeMap[normalizedType] || normalizedType;
 
   const isMusic = normalizedType === 'music';
+  
+  // Broadened search query to capture both niche forums and general trivia
   const loreQuery = isMusic
-    ? `"${query}" (site:reddit.com OR site:gearspace.com OR site:discogs.com OR site:soundonsound.com OR site:musicradar.com OR "interview" OR "behind the scenes" OR "trivia" OR "lore" OR "lost media" OR "recording" OR "production" OR "gear" OR "synth" OR "sample")`
-    : `"${query}" ${normalizedType} (site:reddit.com OR site:gearspace.com OR site:discogs.com OR site:imdb.com OR "interview" OR "behind the scenes" OR "trivia" OR "lore" OR "deleted scene" OR "lost media")`;
+    ? `"${query}" (site:reddit.com OR site:gearspace.com OR site:discogs.com OR "interview" OR "trivia" OR "lore" OR "production" OR "history")`
+    : `"${query}" ${normalizedType} (site:reddit.com OR site:imdb.com OR "interview" OR "behind the scenes" OR "trivia" OR "lore" OR "history")`;
 
   const { rawText, images } = await searchMediaFacts(loreQuery);
 
-  if (!rawText || rawText.length < 10) {
+  // Lowered threshold to ensure we don't accidentally reject popular topics
+  if (!rawText || rawText.length < 20) {
     return { 
-      dossier: `Couldn't find enough deep-cut data for **"${query}"**. Try searching for a specific album, specific episode, or adding a year (e.g., "Aphex Twin 1995").`,
+      dossier: `Couldn't find enough data for **"${query}"**. Try searching for a specific album, episode, or adding a year.`,
       images: []
     };
   }
@@ -183,30 +138,28 @@ const generateSimpleDossier = async (type, query) => {
 
   const systemInstruction = isMusic
     ? `
-You are a "Music Lore Gatekeeper" with zero tolerance for generic fluff.
-
+You are a Music Lore Expert.
 **CRITICAL INSTRUCTIONS:**
-1. You MUST follow the user's prompt EXACTLY.
-2. If the provided search text does NOT contain a specific name, date, location, or technical detail for a category, **SKIP THAT CATEGORY**. Do not write "No information found".
-3. Absolutely DO NOT start with an introductory sentence. Jump straight into the first section.
-4. Every bullet point MUST contain a concrete fact (e.g., "Used a modified EMS Synthi AKS" vs. "Used interesting gear").
-5. If you have fewer than 1 total concrete facts across all sections, output exactly: "❌ No deep-cut lore found. Try searching for a specific album or track instead."
+1. Prioritize specific technical details and forum data if available.
+2. If deep technical lore isn't available, it is perfectly fine to include popular trivia, general history, and obvious facts to build context.
+3. Do NOT reject the prompt or complain about missing data. Do your best with what is provided.
+4. Absolutely DO NOT start with an introductory sentence. Jump straight into the first section.
 `
     : `
-You are a "Lore Gatekeeper" with zero tolerance for generic fluff.
-
+You are a Media Lore Expert.
 **CRITICAL INSTRUCTIONS:**
-1. You MUST follow the user's prompt EXACTLY.
-2. If the provided search text does NOT contain a specific name, date, location, or technical detail for a category, **SKIP THAT CATEGORY**. Do not write "No information found".
-3. Absolutely DO NOT start with an introductory sentence. Jump straight into **Category 1**.
-4. Every bullet point MUST contain a concrete fact (e.g., "Robin Williams was considered for Jack Torrance in 1998" vs. "Many actors were considered").
+1. Prioritize specific niche details and forum data if available.
+2. If deep lore isn't available, it is perfectly fine to include popular trivia, general history, and obvious facts to build context.
+3. Do NOT reject the prompt or complain about missing data. Do your best with what is provided.
+4. Absolutely DO NOT start with an introductory sentence. Jump straight into Category 1.
 `;
 
   const finalDossier = await extractText(systemInstruction, userPrompt);
 
-  if (finalDossier.length < 10|| finalDossier.includes("sparked significant online discussion")) {
+  // Removed the strict failure trap that rejected general summaries
+  if (finalDossier.length < 20) {
     return { 
-      dossier: `The search results for **"${query}"** only contained surface-level summaries. Try searching for a specific work (e.g., "Selected Ambient Works" instead of "Aphex Twin") to unlock the deep lore.`,
+      dossier: `The search results for **"${query}"** were too limited. Try searching for a specific work to unlock more lore.`,
       images: images,
       primaryImage: primaryImage
     };
